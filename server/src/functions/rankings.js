@@ -70,7 +70,7 @@ function _parseNextDataVarible(__NEXT_DATA__) {
     }
   }
   const extractCollection = (obj) => {
-    console.log('OBJECT => ', obj);
+
     return {
       name: obj.name,
       slug: obj.slug,
@@ -94,16 +94,16 @@ function _parseNextDataVarible(__NEXT_DATA__) {
 }
 
 function getUrl(type) {
-  if (type === "24h") {
+  if (type === "1day") {
     return "https://opensea.io/rankings?sortBy=one_day_volume";
 
-  } else if (type === "7d") {
+  } else if (type === "7days") {
     return "https://opensea.io/rankings?sortBy=seven_day_volume";
 
-  } else if (type === "30d") {
+  } else if (type === "30days") {
     return "https://opensea.io/rankings?sortBy=thirty_day_volume";
 
-  } else if (type === "total") {
+  } else if (type === "all") {
     return "https://opensea.io/rankings?sortBy=total_volume";
 
   } else {

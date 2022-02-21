@@ -3,7 +3,8 @@ const { body } = require("express-validator");
 
 const { getRanking } = require("./controllers/getRanking")
 
-router.get("/api/getRank", [body("ranking")], getRanking);
+router.get("/api/getRank/:periodTemp", [body("ranking")], getRanking);
+
 // router.post("api/getRank", function (req, res) {
 //     getRanking
 // })

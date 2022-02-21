@@ -217,12 +217,10 @@ const reorder = (list, startIndex, endIndex) => {
 };
 
 const periodInit = [
-  { value: '1 hour' },
-  { value: '2 hours' },
-  { value: '3 hours' },
-  { value: '1 day' },
-  { value: '7 days' },
-  { value: '1 month' }
+  { label: 'Last 24 hours', value: '1day' },
+  { label: 'Last 7 days', value: '7days' },
+  { label: 'Last 30 days', value: '30days' },
+  { label: 'All time', value: 'all' }
 ];
 
 export default function EnhancedTable() {
@@ -233,10 +231,14 @@ export default function EnhancedTable() {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [period, setPeriod] = React.useState('1 hour');
+  const [period, setPeriod] = React.useState('1day');
 
   const handleChangePeriod = (event) => {
-    setPeriod(event.target.value);
+    const periodValue = event.target.value;
+    setPeriod(periodValue);
+    axios.get(`http://localhost:3001/api/getRank/${periodValue}`).then(async (response) => {
+      setData(response.data.ranking);
+    });
   };
 
   useEffect(() => {
@@ -246,7 +248,7 @@ export default function EnhancedTable() {
     //   headers: { Accept: 'application/json' }
     // };
 
-    axios.get('http://localhost:3001/api/getRank').then(async (response) => {
+    axios.get('http://localhost:3001/api/getRank/1day').then(async (response) => {
       console.log('response=>', response.data.ranking);
 
       setData(response.data.ranking);
@@ -347,7 +349,7 @@ export default function EnhancedTable() {
             onChange={handleChangePeriod}
           >
             {periodInit.map((temp, index) => (
-              <MenuItem value={temp.value}>{temp.value}</MenuItem>
+              <MenuItem value={temp.value}>{temp.label}</MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -456,7 +458,7 @@ export default function EnhancedTable() {
               </DragDropContext>
             </Table>
           </TableContainer>
-          <TablePagination
+          {/* <TablePagination
             rowsPerPageOptions={[5, 10, 25, 100]}
             component="div"
             count={data.length}
@@ -464,7 +466,7 @@ export default function EnhancedTable() {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-          />
+          /> */}
         </Paper>
         {/* <FormControlLabel control={<Switch checked={dense} onChange={handleChangeDense} />} label="Dense padding" /> */}
       </Box>
