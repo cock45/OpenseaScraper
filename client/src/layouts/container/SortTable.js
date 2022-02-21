@@ -76,25 +76,25 @@ const headCells = [
     label: 'Collection'
   },
   {
-    id: 'totalVolume',
+    id: 'oneDayVolume',
     numeric: true,
     disablePadding: false,
     label: 'Volume'
   },
   {
-    id: 'one_day_volume',
+    id: 'oneDayVolume',
     numeric: true,
     disablePadding: false,
     label: '24h %'
   },
   {
-    id: 'seven_day_volume',
+    id: 'sevenDayVolume',
     numeric: true,
     disablePadding: false,
     label: '7d %'
   },
   {
-    id: 'floor',
+    id: 'floorPrice',
     numeric: true,
     disablePadding: false,
     label: 'Floor Price'
@@ -414,22 +414,28 @@ export default function EnhancedTable() {
                                       </Stack>
                                     </Stack>
                                   </TableCell>
-                                  <TableCell align="right">{row.oneDayVolume.toFixed(2)}</TableCell>
-                                  <TableCell align="right">
+                                  <TableCell align="right" id={labelId}>
+                                    {row.oneDayVolume.toFixed(2)}
+                                  </TableCell>
+                                  <TableCell align="right" id={labelId}>
                                     <Stack direction="column" spacing={2}>
                                       <Stack>{row.oneDayVolume.toFixed(2)}</Stack>
                                       <Stack>{(row.oneDayChange * 100).toFixed(2)}%</Stack>
                                     </Stack>
                                   </TableCell>
-                                  <TableCell align="right">
+                                  <TableCell align="right" id={labelId}>
                                     <Stack direction="column" spacing={2}>
                                       <Stack>{row.sevenDayVolume.toFixed(2)}</Stack>
                                       <Stack>{(row.sevenDayChange * 100).toFixed(2)}%</Stack>
                                     </Stack>
                                   </TableCell>
-                                  <TableCell align="right">{row.floorPrice.amount.toFixed(2)}</TableCell>
+                                  <TableCell align="right" id={labelId}>
+                                    {row.floorPrice.toFixed(2)}
+                                  </TableCell>
                                   {/* <TableCell align="right">{row.avg}</TableCell> */}
-                                  <TableCell align="right">{(row.numOwners / 1000).toFixed(1)}K</TableCell>
+                                  <TableCell align="right" id={labelId}>
+                                    {(row.numOwners / 1000).toFixed(1)}K
+                                  </TableCell>
                                 </TableRow>
                               )}
                             </Draggable>

@@ -1,6 +1,8 @@
 const OpenseaScraper = require("../src/index");
+const price = require("crypto-price");
 
 const dotenv = require("dotenv");
+const { default: axios } = require("axios");
 dotenv.config();
 
 // switch on/off which function to demo
@@ -19,9 +21,7 @@ const options = {
   logs: true,
   browserInstance: undefined,
 }
-console.log(`===>>> ${slug} <<<===`);
-console.log("OPTIONS:");
-console.log(options);
+
 
 exports.getRanking = async (req, res, next) => {
   // basic info
@@ -55,15 +55,18 @@ exports.getRanking = async (req, res, next) => {
 
   // scrape rankings => https://opensea.io/rankings?sortBy=total_volume
   // if (demoRankings) {
-  console.log(`\n\n\n\n✅ === OpenseaScraper.rankings() ===`);
-  console.log(`scraping ranking (last 24h)`);
+
   const rankings = await OpenseaScraper.rankings("24h", options);
-  console.log(`scraped ${rankings.length} collections: ${rankings.map(o => o.slug).join(" | ")}`);
+
+  var tokensArray = [];
+  rankings.map((collection) => {
+    tokensArray.push(collection.nativeCurrency)
+  });
+  tokensArray = [...new Set(tokensArray)];
 
   res.json({
     ranking: rankings,
   });
-  // }
 
   // get offersByScrolling
   // if (demoOffersByScrolling) {
