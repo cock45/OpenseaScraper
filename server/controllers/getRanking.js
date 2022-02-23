@@ -15,13 +15,6 @@ const demoOffersByScrollingByUrl = true;
 
 // which NFT project to scrape?
 // const slug = "cool-cats-nft";
-const options = {
-  debug: false,
-  sort: true,
-  logs: true,
-  browserInstance: undefined,
-}
-
 
 exports.getRanking = async (req, res, next) => {
 
@@ -56,9 +49,30 @@ exports.getRanking = async (req, res, next) => {
 
   // scrape rankings => https://opensea.io/rankings?sortBy=total_volume
   // if (demoRankings) {
+  const period = req.params.attr.split("&")[0];
+  // const pageNum = req.params.attr.split("&")[1];
+  const pageNum = 3;
 
-  console.log('period => ', req.params.periodTemp);
-  const rankings = await OpenseaScraper.rankings(req.params.periodTemp, options);
+  const options = {
+    nbrOfPages: pageNum,
+    debug: false,
+    sort: true,
+    logs: true,
+    browserInstance: undefined,
+  }
+
+  console.log('period => ', period);
+  console.log('pageNum => ', pageNum);
+  // const rankings = await OpenseaScraper.rankings(period, options);
+  const rankings = await OpenseaScraper.rankings(options);
+
+  console.log('length: ', rankings.length);
+  console.log("1: ", rankings[0]);
+  console.log("2: ", rankings[100]);
+  console.log("3: ", rankings[200]);
+  // rankings.map((collection) => {
+  //   console.log("thumbnail => ", collection.thumbnail);
+  // })
 
   var tokensArray = [];
   rankings.map((collection) => {
