@@ -14,7 +14,7 @@ puppeteer.use(StealthPlugin());
  *   browserInstance: browser instance created with puppeteer.launch() (bring your own puppeteer instance)
  * }
  */
-const rankings = async (optionsGiven = {}) => {
+const rankings = async (period = "total", optionsGiven = {}) => {
   const optionsDefault = {
     nbrOfPages: 1,
     debug: false,
@@ -22,7 +22,6 @@ const rankings = async (optionsGiven = {}) => {
     browserInstance: undefined,
   };
   const { nbrOfPages, debug, logs, browserInstance } = { ...optionsDefault, ...optionsGiven };
-  console.log("NumberOFpages => ", nbrOfPages);
 
   // init browser
   let browser = browserInstance;
@@ -34,7 +33,7 @@ const rankings = async (optionsGiven = {}) => {
   }
 
   const page = await browser.newPage();
-  const url = "https://opensea.io/rankings?sortBy=total_volume";
+  const url = getUrl(period);
   logs && console.log("...opening url: " + url);
   await page.goto(url);
 
@@ -91,4 +90,23 @@ async function _scrollToBottomAndFetchCollections(page) {
       resolve(dict);
     }, 5);
   }));
+}
+
+function getUrl(type) {
+  console.log("type => ", type);
+  if (type === "1day") {
+    return "https://opensea.io/rankings?sortBy=one_day_volume";
+
+  } else if (type === "7days") {
+    return "https://opensea.io/rankings?sortBy=seven_day_volume";
+
+  } else if (type === "30days") {
+    return "https://opensea.io/rankings?sortBy=thirty_day_volume";
+
+  } else if (type === "total") {
+    return "https://opensea.io/rankings?sortBy=total_volume";
+
+  } else {
+    throw new Error(`Invalid type provided. Expected: 24h,7d,30d,total. Got: ${type}`);
+  }
 }

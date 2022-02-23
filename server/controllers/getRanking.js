@@ -55,21 +55,17 @@ exports.getRanking = async (req, res, next) => {
 
   const options = {
     nbrOfPages: pageNum,
-    debug: false,
+    debug: true,
     sort: true,
     logs: true,
     browserInstance: undefined,
   }
 
-  console.log('period => ', period);
-  console.log('pageNum => ', pageNum);
-  // const rankings = await OpenseaScraper.rankings(period, options);
-  const rankings = await OpenseaScraper.rankings(options);
+  const rankings = await OpenseaScraper.rankings(period, options);
 
   console.log('length: ', rankings.length);
   console.log("1: ", rankings[0]);
-  console.log("2: ", rankings[100]);
-  console.log("3: ", rankings[200]);
+  console.log("2: ", rankings[99]);
   // rankings.map((collection) => {
   //   console.log("thumbnail => ", collection.thumbnail);
   // })

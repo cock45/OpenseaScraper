@@ -40,40 +40,23 @@ function fetchCollections(dict) {
         sevenDayChange: _extractSevenDayChange(row),
         owners: _extractOwners(row),
         items: _extractItems(row),
-        counts: '3',
       };
     }
   })
 }
-// nativeCurrency: obj.nativePaymentAsset.symbol,
-// numOwners: Number(obj.statsV2.numOwners),
-// totalSupply: Number(obj.statsV2.totalSupply),
-// oneDayVolume: Number(obj.statsV2.oneDayVolume.unit),
-// sevenDayVolume: Number(obj.statsV2.sevenDayVolume.unit),
-// thirtyDayVolume: Number(obj.statsV2.thirtyDayVolume),
-// thirtyDayChange: Number(obj.statsV2.thirtyDayChange),
-// totalVolume: Number(obj.statsV2.totalVolume.unit)
-
-// name: obj.name,
-// slug: slug,
-// logo: obj.logo,
-// isVerified: obj.isVerified,
-// nativeCurrency: obj.nativePaymentAsset.symbol,
-// floorPrice: obj.statsV2.floorPrice ? Number(obj.statsV2.floorPrice.unit) : 0,
-// numOwners: Number(obj.statsV2.numOwners),
-// totalSupply: Number(obj.statsV2.totalSupply),
-// oneDayVolume: Number(obj.statsV2.oneDayVolume.unit),
-// sevenDayVolume: Number(obj.statsV2.sevenDayVolume.unit),
-// thirtyDayVolume: Number(obj.statsV2.thirtyDayVolume),
-// oneDayChange: Number(obj.statsV2.oneDayChange),
-// sevenDayChange: Number(obj.statsV2.sevenDayChange),
-// thirtyDayChange: Number(obj.statsV2.thirtyDayChange),
-// totalVolume: Number(obj.statsV2.totalVolume.unit)
+        // nativeCurrency: obj.nativePaymentAsset.symbol,
+        // numOwners: Number(obj.statsV2.numOwners),
+        // totalSupply: Number(obj.statsV2.totalSupply),
+        // oneDayVolume: Number(obj.statsV2.oneDayVolume.unit),
+        // sevenDayVolume: Number(obj.statsV2.sevenDayVolume.unit),
+        // thirtyDayVolume: Number(obj.statsV2.thirtyDayVolume),
+        // thirtyDayChange: Number(obj.statsV2.thirtyDayChange),
+        // totalVolume: Number(obj.statsV2.totalVolume.unit)
 function _extractRank(row) {
   try {
     // return Number(row.querySelector("div > div").innerText);
     return Number(row.innerText.split(/\D/)[0]);
-  } catch (err) {
+  } catch(err) {
     return undefined;
   }
 }
@@ -84,79 +67,65 @@ function _extractSlug(row) {
     // const collectionUrlSplit = row.querySelector('a').href.split("/");
     // const slug = collectionUrlSplit[collectionUrlSplit.length - 1];
     return slug;
-  } catch (err) {
+  } catch(err) {
     return undefined;
   }
 }
 function _extractLogo(row) {
   try {
     return row.querySelector(".Image--image").src;
-  } catch (err) {
+  } catch(err) {
     return undefined;
   }
 }
 function _extractName(row) {
   try {
-    return row.querySelector(".Ranking--collection-name-overflow");
-  } catch (err) {
+    //return row.querySelector(".Ranking--collection-name-overflow").innerText;
+    return row.children[0].children[2].children[0].innerText;
+  } catch(err) {
     return undefined;
   }
 }
-// NOT WORKING SOMEHOW
 function _extractFloorPrice(row) { // only ETH floor prices, otherwise uzndefined
   try {
-    const isEth = row.querySelector(".RankingsPricereact__EthAvatar-sc-rjdias-0").src === "https://storage.opensea.io/files/6f8e2979d428180222796ff4a33ab929.svg";
-    if (!isEth) {
-      return undefined;
-    }
-    return Number(el.querySelectorAll(".Overflowreact__OverflowContainer-sc-10mm0lu-0.fqMVjm")[5].innerText);
-
-  } catch (err) {
+    return row.children[4].children[0].children[1].innerText;
+  } catch(err) {
     return undefined;
   }
 }
 function _extractVolume(row) {
   try {
-    const volumeCol = row.querySelectorAll("[display=flex]")[1];
-    const volume = volumeCol.querySelector("span > div").innerText;
-    return volume;
-  } catch (err) {
+    return row.children[1].children[0].children[1].innerText;
+  } catch(err) {
     return undefined;
   }
 }
 function _extractOneDayChange(row) {
   try {
-    const oneDayCol = row.querySelectorAll("[display=flex]")[2];
-    const change = oneDayCol.querySelector("span > div").innerText;
-    return change;
-  } catch (err) {
+    // return row.children[0].children[2].children[0].children[0].innerText;
+    return row.children[2].children[0].children[1].innerText;
+  } catch(err) {
     return undefined;
   }
 }
 function _extractSevenDayChange(row) {
   try {
-    const sevenDayCol = row.querySelectorAll("[display=flex]")[3];
-    const change = sevenDayCol.querySelector("span > div").innerText;
-    return change;
-  } catch (err) {
+    return row.children[3].children[0].children[0].innerText;
+  } catch(err) {
     return undefined;
   }
 }
 function _extractOwners(row) {
   try {
-    const ownerCol = row.querySelectorAll("[display=flex]")[5];
-    const owner = ownerCol.querySelector("p").innerText;
-    return owner;
-  } catch (err) {
+    return row.children[5].children[0].innerHTML;
+  } catch(err) {
     return undefined;
   }
 }
 function _extractItems(row) {
   try {
-    const itemCol = row.querySelectorAll("[display=flex]")[6];
-    const items = itemCol.querySelector("p").innerText;
-    return items;
-  } catch (err) {
+    return row.children[6].children[0].innerHTML;
+  } catch(err) {
     return undefined;
   }
 }

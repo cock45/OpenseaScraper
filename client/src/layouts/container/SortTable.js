@@ -76,19 +76,19 @@ const headCells = [
     label: 'Collection'
   },
   {
-    id: 'oneDayVolume',
+    id: 'volume',
     numeric: true,
     disablePadding: false,
     label: 'Volume'
   },
   {
-    id: 'oneDayVolume',
+    id: 'oneDayChange',
     numeric: true,
     disablePadding: false,
     label: '24h %'
   },
   {
-    id: 'sevenDayVolume',
+    id: 'sevenDayChange',
     numeric: true,
     disablePadding: false,
     label: '7d %'
@@ -99,17 +99,17 @@ const headCells = [
     disablePadding: false,
     label: 'Floor Price'
   },
-  // {
-  //   id: 'avg',
-  //   numeric: true,
-  //   disablePadding: false,
-  //   label: 'Average Price'
-  // },
   {
-    id: 'num_owners',
+    id: 'owners',
     numeric: true,
     disablePadding: false,
     label: 'Owners'
+  },
+  {
+    id: 'items',
+    numeric: true,
+    disablePadding: false,
+    label: 'Items'
   }
 ];
 
@@ -220,7 +220,7 @@ const periodInit = [
   { label: 'Last 24 hours', value: '1day' },
   { label: 'Last 7 days', value: '7days' },
   { label: 'Last 30 days', value: '30days' },
-  { label: 'All time', value: 'all' }
+  { label: 'All time', value: 'total' }
 ];
 
 export default function EnhancedTable() {
@@ -232,28 +232,21 @@ export default function EnhancedTable() {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [period, setPeriod] = React.useState('1day');
-
-  const handleChangePeriod = (event) => {
-    const periodValue = event.target.value;
-    setPeriod(periodValue);
-    axios.get(`http://localhost:3001/api/getRank/${periodValue}`).then(async (response) => {
-      setData(response.data.ranking);
-    });
-  };
+  const [pageNum, setPageNum] = React.useState('1');
 
   useEffect(() => {
-    // const options = {
-    //   method: 'GET',
-    //   url: 'https://api.opensea.io/api/v1/collections?offset=0&limit=300',
-    //   headers: { Accept: 'application/json' }
-    // };
-
-    axios.get('http://localhost:3001/api/getRank/1day').then(async (response) => {
+    axios.get(`http://localhost:3001/api/getRank/${period}&${pageNum}`).then(async (response) => {
       console.log('response=>', response.data.ranking);
-
       setData(response.data.ranking);
     });
   }, []);
+  const handleChangePeriod = (event) => {
+    const periodValue = event.target.value;
+    setPeriod(periodValue);
+    axios.get(`http://localhost:3001/api/getRank/${period}&${pageNum}`).then(async (response) => {
+      setData(response.data.ranking);
+    });
+  };
   // response.data.ranking.map((collection) => {
   //   const result = {
   //     img_url: collection.logo,
@@ -395,48 +388,37 @@ export default function EnhancedTable() {
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                 >
-                                  {/* <TableCell padding="checkbox">
-                        <Checkbox
-                          color="primary"
-                          checked={isItemSelected}
-                          inputProps={{
-                            'aria-labelledby': labelId
-                          }}
-                        />
-                      </TableCell> */}
                                   <TableCell component="th" id={labelId} scope="row" padding="none">
                                     <Stack direction="row" spacing={2}>
+                                      <Stack direction="column">
+                                        <Stack>{row.rank}</Stack>
+                                      </Stack>
                                       <Stack>
                                         {/* <img rounded src={row.img_url} alt="logo_image" /> */}
                                         <Avatar rounded src={row.logo} alt="logo_image" />
                                       </Stack>
                                       <Stack direction="column">
                                         <Stack>{row.name}</Stack>
-                                        <Stack>TotalSupply: {row.totalSupply}</Stack>
                                       </Stack>
                                     </Stack>
                                   </TableCell>
                                   <TableCell align="right" id={labelId}>
-                                    {row.oneDayVolume.toFixed(2)}
+                                    {row.volume ? Number(row.volume).toFixed(2) : '-'}
                                   </TableCell>
                                   <TableCell align="right" id={labelId}>
-                                    <Stack direction="column" spacing={2}>
-                                      <Stack>{row.oneDayVolume.toFixed(2)}</Stack>
-                                      <Stack>{(row.oneDayChange * 100).toFixed(2)}%</Stack>
-                                    </Stack>
+                                    {row.oneDayChange ? row.oneDayChange : '-'}
                                   </TableCell>
                                   <TableCell align="right" id={labelId}>
-                                    <Stack direction="column" spacing={2}>
-                                      <Stack>{row.sevenDayVolume.toFixed(2)}</Stack>
-                                      <Stack>{(row.sevenDayChange * 100).toFixed(2)}%</Stack>
-                                    </Stack>
+                                    {row.sevenDayChange ? row.sevenDayChange : '-'}
                                   </TableCell>
                                   <TableCell align="right" id={labelId}>
-                                    {row.floorPrice.toFixed(2)}
+                                    {row.floorPrice ? row.floorPrice : '-'}
                                   </TableCell>
-                                  {/* <TableCell align="right">{row.avg}</TableCell> */}
                                   <TableCell align="right" id={labelId}>
-                                    {(row.numOwners / 1000).toFixed(1)}K
+                                    {row.owners ? row.owners : '-'}
+                                  </TableCell>
+                                  <TableCell align="right" id={labelId}>
+                                    {row.items ? row.items : '-'}
                                   </TableCell>
                                 </TableRow>
                               )}
@@ -458,7 +440,7 @@ export default function EnhancedTable() {
               </DragDropContext>
             </Table>
           </TableContainer>
-          {/* <TablePagination
+          <TablePagination
             rowsPerPageOptions={[5, 10, 25, 100]}
             component="div"
             count={data.length}
@@ -466,7 +448,7 @@ export default function EnhancedTable() {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-          /> */}
+          />
         </Paper>
         {/* <FormControlLabel control={<Switch checked={dense} onChange={handleChangeDense} />} label="Dense padding" /> */}
       </Box>
