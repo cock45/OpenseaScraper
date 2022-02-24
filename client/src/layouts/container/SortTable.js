@@ -404,7 +404,7 @@ export default function EnhancedTable() {
                                     </Stack>
                                   </TableCell>
                                   <TableCell align="right" id={labelId}>
-                                    {row.volume ? Number(row.volume).toFixed(2) : '-'}
+                                    {row.volume ? row.volume : '-'}
                                   </TableCell>
                                   <TableCell align="right" id={labelId}>
                                     {row.oneDayChange ? row.oneDayChange : '-'}
