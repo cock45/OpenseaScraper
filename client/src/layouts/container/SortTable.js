@@ -232,34 +232,53 @@ export default function EnhancedTable() {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [period, setPeriod] = React.useState('1day');
-  const [pageNum, setPageNum] = React.useState('1');
+
+  const [pageNum, setPageNum] = React.useState(1);
+  const [maxPageNum, setMaxPageNum] = React.useState(1);
 
   useEffect(() => {
-    axios.get(`http://localhost:3001/api/getRank/${period}&${pageNum}`).then(async (response) => {
-      console.log('response=>', response.data.ranking);
-      setData(response.data.ranking);
-    });
+    // axios.post(`${process.env.REACT_APP_API_BASE_URL}getRank`, body).then((response) => {
+    axios
+      .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
+        period: '1day',
+        pageNum: 1
+      })
+      .then((response) => {
+        // setStore(response.data.ranking);
+        setData(response.data.ranking);
+      })
+      .catch((err) => console.log('Server error: ', err));
   }, []);
+
   const handleChangePeriod = (event) => {
     const periodValue = event.target.value;
     setPeriod(periodValue);
-    axios.get(`http://localhost:3001/api/getRank/${period}&${pageNum}`).then(async (response) => {
-      setData(response.data.ranking);
-    });
+    axios
+      .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
+        period,
+        pageNum: 1
+      })
+      .then((response) => {
+        // setStore(response.data.ranking);
+        setData(response.data.ranking);
+      });
   };
-  // response.data.ranking.map((collection) => {
-  //   const result = {
-  //     img_url: collection.logo,
-  //     name: collection.name,
-  //     // volume: collection.stats.total_volume,
-  //     // one_day_volume; collection.
-  //     // one_week_volume; collection.
-  //     floor: collection.floorPrice
-  //     // avg: collection.stats.average_price,
-  //     // total_supply: collection.stats.total_supply
-  //   };
-  //   return result;
-  // })
+
+  const handleChangePage = (event) => {
+    const currentPageNum = event.target.value;
+    if (currentPageNum > maxPageNum) {
+      setMaxPageNum(currentPageNum);
+      axios
+        .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
+          period,
+          pageNum
+        })
+        .then((response) => {
+          // setStore(response.data.ranking);
+          setData(response.data.ranking);
+        });
+    }
+  };
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -291,10 +310,6 @@ export default function EnhancedTable() {
     }
 
     setSelected(newSelected);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
@@ -440,15 +455,6 @@ export default function EnhancedTable() {
               </DragDropContext>
             </Table>
           </TableContainer>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 100]}
-            component="div"
-            count={data.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
         </Paper>
         {/* <FormControlLabel control={<Switch checked={dense} onChange={handleChangeDense} />} label="Dense padding" /> */}
       </Box>

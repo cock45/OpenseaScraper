@@ -34,23 +34,16 @@ const rankings = async (period = "total", optionsGiven = {}) => {
 
   const page = await browser.newPage();
   const url = getUrl(period);
-  logs && console.log("...opening url: " + url);
   await page.goto(url);
-
-  logs && console.log("...🚧 waiting for cloudflare to resolve");
   await page.waitForSelector('.cf-browser-verification', { hidden: true });
-
-  logs && console.log("...exposing helper functions through script tag")
   await page.addScriptTag({ path: require.resolve("../helpers/rankingsHelperFunctions.js") });
 
-  logs && console.log("...scrolling to bottom and fetching collections.");
   let dict = await _scrollToBottomAndFetchCollections(page);
 
   // scrape n pages
   for (let i = 0; i < nbrOfPages - 1; i++) {
     await _clickNextPageButton(page);
     await page.waitForSelector('.Image--image');
-    // logs && console.log("Page: " + i + " -> Items fetched so far: " + Object.keys(dict).length);
     dict = await _scrollToBottomAndFetchCollections(page);
   }
 
@@ -58,7 +51,6 @@ const rankings = async (period = "total", optionsGiven = {}) => {
 
   // transform dict to array + remove invalid results
   const filtered = Object.values(dict).filter(o => o.rank !== 0 && o.name !== "");
-  logs && console.log("...🥳 DONE. Total Collections fetched: " + Object.keys(dict).length);
   // order by rank
   return filtered.sort((a, b) => a.rank - b.rank);
 }
