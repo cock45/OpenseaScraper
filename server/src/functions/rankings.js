@@ -1,12 +1,9 @@
-// puppeteer-extra is a drop-in replacement for puppeteer,
-// it augments the installed puppeteer with plugin functionality
 const puppeteer = require('puppeteer-extra');
-// add stealth plugin and use defaults (all evasion techniques)
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 
 /**
- * Scrapes all collections from the Rankings page at https://opensea.io/rankings?sortBy=total_volume
+ * Scrapes all collections from the Rankings page at https://opensea.io/rankings
  * options = {
  *   nbrOfPages: number of pages that should be scraped? (defaults to 1 Page = top 100 collections)
  *   debug: [true,false] enable debugging by launching chrome locally (omit headless mode)
@@ -21,45 +18,41 @@ const rankings = async (period = "total", optionsGiven = {}) => {
     logs: false,
     browserInstance: undefined,
   };
-  const { nbrOfPages, debug, logs, browserInstance } = { ...optionsDefault, ...optionsGiven };
+  const options = { ...optionsDefault, ...optionsGiven };
+  const { nbrOfPages, debug, logs, browserInstance } = options;
 
   // init browser
   let browser = browserInstance;
-  if (!browser) {
-    browser = await puppeteer.launch({
-      headless: !debug, // when debug is true => headless should be false
-      args: ['--start-maximized'],
-    });
-  }
 
   const page = await browser.newPage();
   const url = getUrl(period);
-  await page.goto(url);
+
+  logs && console.log("...🚧 waiting for cloudflare to resolve");
   await page.waitForSelector('.cf-browser-verification', { hidden: true });
+  logs && console.log("...exposing helper functions through script tag")
   await page.addScriptTag({ path: require.resolve("../helpers/rankingsHelperFunctions.js") });
+  logs && console.log("...scrolling to bottom and fetching collections.");
 
-  let dict = await _scrollToBottomAndFetchCollections(page);
-
-  // scrape n pages
-  for (let i = 0; i < nbrOfPages - 1; i++) {
-    await _clickNextPageButton(page);
-    await page.waitForSelector('.Image--image');
+  let dict = [];
+  if (nbrOfPages == 1) {
     dict = await _scrollToBottomAndFetchCollections(page);
+  } else {
+    for (let i = 1; i < nbrOfPages; i++) {
+      await _clickNextPageButton(page);
+      if (i == nbrOfPages - 1) {
+        await page.waitForSelector('.Image--image');
+        dict = await _scrollToBottomAndFetchCollections(page);
+      }
+    }
   }
-
   await browser.close();
 
-  // transform dict to array + remove invalid results
   const filtered = Object.values(dict).filter(o => o.rank !== 0 && o.name !== "");
+  logs && console.log("...🥳 DONE. Total Collections fetched: " + Object.keys(dict).length);
   // order by rank
   return filtered.sort((a, b) => a.rank - b.rank);
 }
 
-module.exports = rankings;
-
-/**
- * Helper Functions for OpenseaScraper.rankings()
- */
 async function _clickNextPageButton(page) {
   await page.click('[value=arrow_forward_ios]');
 }
@@ -102,3 +95,5 @@ function getUrl(type) {
     throw new Error(`Invalid type provided. Expected: 24h,7d,30d,total. Got: ${type}`);
   }
 }
+
+module.exports = rankings;
