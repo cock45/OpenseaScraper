@@ -245,7 +245,7 @@ export default function EnhancedTable() {
     axios
       .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
         // .post('http://localhost:3001/api/getRank', {
-        period,
+        periodValue,
         pageNum: 1
       })
       .then((response) => {
@@ -263,7 +263,7 @@ export default function EnhancedTable() {
           .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
             // .post('http://localhost:3001/api/getRank', {
             period,
-            pageNum
+            currentPageNum
           })
           .then((response) => {
             // setStore(response.data.ranking);
