@@ -19,7 +19,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
-import { Stack, Avatar, InputLabel, MenuItem, FormControl, Select } from '@material-ui/core';
+import { Stack, Avatar, InputLabel, MenuItem, FormControl, Select, Button } from '@material-ui/core';
 import { visuallyHidden } from '@material-ui/utils';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios from 'axios';
@@ -61,14 +61,16 @@ function stableSort(array, comparator) {
     }
     return a[1] - b[1];
   });
-  return stabilizedThis.map((el) => {
-    console.log('sorted', el[0]);
-
-    return el[0];
-  });
+  return stabilizedThis.map((el) => el[0]);
 }
 
 const headCells = [
+  {
+    id: 'rank',
+    numeric: false,
+    disablePadding: true,
+    label: 'Rank'
+  },
   {
     id: 'name',
     numeric: false,
@@ -122,17 +124,6 @@ function EnhancedTableHead(props) {
   return (
     <TableHead>
       <TableRow>
-        {/* <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              'aria-label': 'select all desserts'
-            }}
-          />
-        </TableCell> */}
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -143,7 +134,7 @@ function EnhancedTableHead(props) {
             <TableSortLabel
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
+              onClick={() => createSortHandler(headCell.id)}
             >
               {headCell.label}
               {orderBy === headCell.id ? (
@@ -226,35 +217,34 @@ const periodInit = [
 export default function EnhancedTable() {
   const [data, setData] = React.useState([]);
   const [order, setOrder] = React.useState('asc');
-  const [orderBy, setOrderBy] = React.useState('volume');
+  const [orderBy, setOrderBy] = React.useState('rank');
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [period, setPeriod] = React.useState('1day');
-
+  const [store, setStore] = React.useState([]);
   const [pageNum, setPageNum] = React.useState(1);
   const [maxPageNum, setMaxPageNum] = React.useState(1);
 
   useEffect(() => {
-    // axios.post(`${process.env.REACT_APP_API_BASE_URL}getRank`, body).then((response) => {
     axios
       .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
+        // .post('http://localhost:3001/api/getRank', {
         period: '1day',
         pageNum: 1
       })
       .then((response) => {
         // setStore(response.data.ranking);
         setData(response.data.ranking);
-      })
-      .catch((err) => console.log('Server error: ', err));
+      });
   }, []);
-
   const handleChangePeriod = (event) => {
     const periodValue = event.target.value;
     setPeriod(periodValue);
     axios
       .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
+        // .post('http://localhost:3001/api/getRank', {
         period,
         pageNum: 1
       })
@@ -263,21 +253,28 @@ export default function EnhancedTable() {
         setData(response.data.ranking);
       });
   };
-
-  const handleChangePage = (event) => {
-    const currentPageNum = event.target.value;
-    if (currentPageNum > maxPageNum) {
-      setMaxPageNum(currentPageNum);
-      axios
-        .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
-          period,
-          pageNum
-        })
-        .then((response) => {
-          // setStore(response.data.ranking);
-          setData(response.data.ranking);
-        });
+  const clickPageHanlder = (type) => {
+    let currentPageNum = pageNum;
+    if (type === '+') {
+      currentPageNum += 1;
+      if (currentPageNum > maxPageNum) {
+        setMaxPageNum(currentPageNum);
+        axios
+          .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
+            // .post('http://localhost:3001/api/getRank', {
+            period,
+            pageNum
+          })
+          .then((response) => {
+            // setStore(response.data.ranking);
+            setData(response.data.ranking);
+          });
+      }
+    } else {
+      currentPageNum -= 1;
     }
+    setPageNum(currentPageNum);
+    setData(store[currentPageNum - 1]);
   };
 
   const handleRequestSort = (event, property) => {
@@ -310,11 +307,6 @@ export default function EnhancedTable() {
     }
 
     setSelected(newSelected);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
   };
 
   const handleChangeDense = (event) => {
@@ -379,9 +371,6 @@ export default function EnhancedTable() {
                 <Droppable droppableId="tablebody">
                   {(provided) => (
                     <TableBody className="tablebody" {...provided.droppableProps} ref={provided.innerRef}>
-                      {/* if you don't need to support IE11, you can replace the `stableSort` call with:
-                 rows.slice().sort(getComparator(order, orderBy)) */}
-                      {/* {setData(stableSort(data, getComparator(order, orderBy)))} */}
                       {stableSort(data, getComparator(order, orderBy))
                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                         .map((row, index) => {
@@ -393,21 +382,18 @@ export default function EnhancedTable() {
                               {(provided) => (
                                 <TableRow
                                   hover
-                                  // onClick={(event) => handleClick(event, row.name)}
                                   role="checkbox"
-                                  // aria-checked={isItemSelected}
                                   tabIndex={-1}
                                   key={row.name}
-                                  // selected={isItemSelected}
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                 >
+                                  <TableCell align="right" id={labelId}>
+                                    {row.rank}
+                                  </TableCell>
                                   <TableCell component="th" id={labelId} scope="row" padding="none">
                                     <Stack direction="row" spacing={2}>
-                                      <Stack direction="column">
-                                        <Stack>{row.rank}</Stack>
-                                      </Stack>
                                       <Stack>
                                         {/* <img rounded src={row.img_url} alt="logo_image" /> */}
                                         <Avatar rounded src={row.logo} alt="logo_image" />
@@ -456,7 +442,14 @@ export default function EnhancedTable() {
             </Table>
           </TableContainer>
         </Paper>
-        {/* <FormControlLabel control={<Switch checked={dense} onChange={handleChangeDense} />} label="Dense padding" /> */}
+        <Stack direction="row" spaciing={2}>
+          <Button variant="outlined" onClick={() => clickPageHanlder('-')}>
+            {pageNum > 1 ? `${1 + (pageNum - 2) * 100}` - `${(pageNum - 1) * 100}` : `1 - 100`}
+          </Button>
+          <Button variant="outlined" onClick={() => clickPageHanlder('+')}>
+            {1 + pageNum * 100} - {(pageNum + 1) * 100}
+          </Button>
+        </Stack>
       </Box>
     </Stack>
   );
