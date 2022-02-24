@@ -26,7 +26,7 @@ const rankings = async (period = "total", optionsGiven = {}) => {
   if (!browser) {
     browser = await puppeteer.launch({
       headless: !debug, // when debug is true => headless should be false
-      args: ['--start-maximized'],
+      args: ['--window-size=1920,1080'],
     });
   }
 
