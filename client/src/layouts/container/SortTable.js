@@ -324,13 +324,11 @@ export default function EnhancedTable() {
       return;
     }
 
-    console.log('after onDragEng=>', result);
     const reorderData = reorder(
       data,
       result.source.index + page * rowsPerPage,
       page * rowsPerPage + result.destination.index
     );
-    console.log('reoderData=>', reorderData);
     setData(reorderData);
   }
   // Avoid a layout jump when reaching the last page with empty rows.

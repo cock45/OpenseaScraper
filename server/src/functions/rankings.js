@@ -33,13 +33,8 @@ const rankings = async (period = "total", optionsGiven = {}) => {
   const page = await browser.newPage();
   const url = getUrl(period);
 
-  logs && console.log("...opening url: " + url);
   await page.goto(url);
-
-  logs && console.log("...🚧 waiting for cloudflare to resolve");
   await page.waitForSelector('.cf-browser-verification', { hidden: true });
-
-  logs && console.log("...exposing helper functions through script tag")
   await page.addScriptTag({ path: require.resolve("../helpers/rankingsHelperFunctions.js") });
 
   let dict = [];
@@ -57,8 +52,6 @@ const rankings = async (period = "total", optionsGiven = {}) => {
   await browser.close();
 
   const filtered = Object.values(dict).filter(o => o.rank !== 0 && o.name !== "");
-  logs && console.log("...🥳 DONE. Total Collections fetched: " + Object.keys(dict).length);
-  // order by rank
   return filtered.sort((a, b) => a.rank - b.rank);
 }
 
@@ -87,7 +80,6 @@ async function _scrollToBottomAndFetchCollections(page) {
 }
 
 function getUrl(type) {
-  console.log("type => ", type);
   if (type === "1day") {
     return "https://opensea.io/rankings?sortBy=one_day_volume";
 
