@@ -20,9 +20,17 @@ const rankings = async (period = "total", optionsGiven = {}) => {
   };
   const options = { ...optionsDefault, ...optionsGiven };
   const { nbrOfPages, debug, logs, browserInstance } = options;
+  const customPuppeteerProvided = Boolean(optionsGiven.browserInstance);
 
   // init browser
   let browser = browserInstance;
+  if (!customPuppeteerProvided) {
+    browser = await puppeteer.launch({
+      headless: !debug, // when debug is true => headless should be false
+      args: ['--start-maximized'],
+    });
+  }
+  customPuppeteerProvided && warnIfNotUsingStealth(browser);
 
   const page = await browser.newPage();
   const url = getUrl(period);
