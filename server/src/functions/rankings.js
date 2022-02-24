@@ -20,26 +20,27 @@ const rankings = async (period = "total", optionsGiven = {}) => {
   };
   const options = { ...optionsDefault, ...optionsGiven };
   const { nbrOfPages, debug, logs, browserInstance } = options;
-  const customPuppeteerProvided = Boolean(optionsGiven.browserInstance);
 
   // init browser
   let browser = browserInstance;
-  if (!customPuppeteerProvided) {
+  if (!browser) {
     browser = await puppeteer.launch({
       headless: !debug, // when debug is true => headless should be false
       args: ['--start-maximized'],
     });
   }
-  customPuppeteerProvided && warnIfNotUsingStealth(browser);
 
   const page = await browser.newPage();
   const url = getUrl(period);
 
+  logs && console.log("...opening url: " + url);
+  await page.goto(url);
+
   logs && console.log("...🚧 waiting for cloudflare to resolve");
   await page.waitForSelector('.cf-browser-verification', { hidden: true });
+
   logs && console.log("...exposing helper functions through script tag")
   await page.addScriptTag({ path: require.resolve("../helpers/rankingsHelperFunctions.js") });
-  logs && console.log("...scrolling to bottom and fetching collections.");
 
   let dict = [];
   if (nbrOfPages == 1) {
