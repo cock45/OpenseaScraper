@@ -70,6 +70,7 @@ function _extractVolume(row) {
 }
 function _extractOneDayChange(row) {
   try {
+    // return row.children[0].children[2].children[0].children[0].innerText;
     return row.children[2].children[0].children[0].innerText;
   } catch (err) {
     return undefined;
