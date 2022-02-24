@@ -3,7 +3,6 @@ const dict = {};
 function fetchCollections(dict) {
   const rowsNodeList = document.querySelectorAll('[role=list] > div > a');
   const rows = Array.prototype.slice.call(rowsNodeList);
-  const row = rows[0];
 
   rows.forEach(row => {
     const slug = _extractSlug(row);
