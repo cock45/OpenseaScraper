@@ -230,12 +230,11 @@ export default function EnhancedTable() {
   useEffect(() => {
     axios
       .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
-        // .post('http://localhost:3001/api/getRank', {
         period: '1day',
         pageNum: 1
       })
       .then((response) => {
-        // setStore(response.data.ranking);
+        setStore(response.data.ranking);
         setData(response.data.ranking);
       });
   }, []);
@@ -244,37 +243,44 @@ export default function EnhancedTable() {
     setPeriod(periodValue);
     axios
       .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
-        // .post('http://localhost:3001/api/getRank', {
         periodValue,
         pageNum: 1
       })
       .then((response) => {
-        // setStore(response.data.ranking);
+        setStore(response.data.ranking);
         setData(response.data.ranking);
       });
   };
   const clickPageHanlder = (type) => {
-    let currentPageNum = pageNum;
+    console.log('Type => ', type);
+    const currentPageNum = pageNum;
+    let nextPageNum = 0;
+    console.log('Store => \n', store);
     if (type === '+') {
-      currentPageNum += 1;
-      if (currentPageNum > maxPageNum) {
-        setMaxPageNum(currentPageNum);
+      nextPageNum = currentPageNum + 1;
+      console.log('NexPageNum1 = ', nextPageNum);
+      if (nextPageNum > maxPageNum) {
+        console.log('To Next Page');
+        console.log('NexPageNum2 = ', nextPageNum);
+        setMaxPageNum(nextPageNum);
         axios
           .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
-            // .post('http://localhost:3001/api/getRank', {
             period,
-            currentPageNum
+            pageNum: nextPageNum
           })
           .then((response) => {
-            // setStore(response.data.ranking);
+            setStore(...store, response.data.ranking);
             setData(response.data.ranking);
           });
+      } else {
+        console.log('CurrentPageNum => ', currentPageNum);
+        setData(store[currentPageNum]);
       }
     } else {
-      currentPageNum -= 1;
+      nextPageNum = currentPageNum - 1;
+      setData(store[nextPageNum - 1]);
     }
-    setPageNum(currentPageNum);
-    setData(store[currentPageNum - 1]);
+    setPageNum(nextPageNum);
   };
 
   const handleRequestSort = (event, property) => {
@@ -442,7 +448,7 @@ export default function EnhancedTable() {
         </Paper>
         <Stack direction="row" spaciing={2}>
           <Button variant="outlined" onClick={() => clickPageHanlder('-')}>
-            {pageNum > 1 ? `${1 + (pageNum - 2) * 100}` - `${(pageNum - 1) * 100}` : `1 - 100`}
+            {pageNum > 1 ? `${1 + (pageNum - 2) * 100} - ${(pageNum - 1) * 100}` : `1 - 100`}
           </Button>
           <Button variant="outlined" onClick={() => clickPageHanlder('+')}>
             {1 + pageNum * 100} - {(pageNum + 1) * 100}
