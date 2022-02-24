@@ -252,16 +252,11 @@ export default function EnhancedTable() {
       });
   };
   const clickPageHanlder = (type) => {
-    console.log('Type => ', type);
     const currentPageNum = pageNum;
     let nextPageNum = 0;
-    console.log('Store => \n', store);
     if (type === '+') {
       nextPageNum = currentPageNum + 1;
-      console.log('NexPageNum1 = ', nextPageNum);
       if (nextPageNum > maxPageNum) {
-        console.log('To Next Page');
-        console.log('NexPageNum2 = ', nextPageNum);
         setMaxPageNum(nextPageNum);
         axios
           .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
@@ -273,7 +268,6 @@ export default function EnhancedTable() {
             setData(response.data.ranking);
           });
       } else {
-        console.log('CurrentPageNum => ', currentPageNum);
         setData(store[currentPageNum]);
       }
     } else {
