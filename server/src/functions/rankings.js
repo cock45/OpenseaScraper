@@ -30,6 +30,16 @@ const rankings = async (period = "total", optionsGiven = {}) => {
     });
   }
 
+  // const launch_browser = async () => {
+  //   this.browser = false;
+  //   this.browser = await puppeteer.launch();
+  //   this.browser.on('disconnected', launch_browser);
+  // };
+
+  // (async () => {
+  //   await launch_browser();
+  // })();
+
   const page = await browser.newPage();
   const url = getUrl(period);
 

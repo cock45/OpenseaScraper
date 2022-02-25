@@ -441,9 +441,12 @@ export default function EnhancedTable() {
           </TableContainer>
         </Paper>
         <Stack direction="row" spaciing={2}>
-          <Button variant="outlined" onClick={() => clickPageHanlder('-')}>
-            {pageNum > 1 ? `${1 + (pageNum - 2) * 100} - ${(pageNum - 1) * 100}` : `1 - 100`}
-          </Button>
+          {pageNum > 1 && (
+            <Button variant="outlined" onClick={() => clickPageHanlder('-')}>
+              {1 + (pageNum - 2) * 100} - {(pageNum - 1) * 100}
+              {/* {pageNum > 1 ? `${1 + (pageNum - 2) * 100} - ${(pageNum - 1) * 100}` : `1 - 100`} */}
+            </Button>
+          )}
           <Button variant="outlined" onClick={() => clickPageHanlder('+')}>
             {1 + pageNum * 100} - {(pageNum + 1) * 100}
           </Button>
