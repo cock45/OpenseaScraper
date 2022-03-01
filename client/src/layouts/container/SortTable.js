@@ -134,7 +134,7 @@ function EnhancedTableHead(props) {
             <TableSortLabel
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={() => createSortHandler(headCell.id)}
+              onClick={createSortHandler(headCell.id)}
             >
               {headCell.label}
               {orderBy === headCell.id ? (
@@ -216,6 +216,7 @@ const periodInit = [
 
 export default function EnhancedTable() {
   const [data, setData] = React.useState([]);
+  const [store, setStore] = React.useState([]);
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('rank');
   const [selected, setSelected] = React.useState([]);
@@ -223,7 +224,6 @@ export default function EnhancedTable() {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [period, setPeriod] = React.useState('1day');
-  const [store, setStore] = React.useState([]);
   const [pageNum, setPageNum] = React.useState(1);
   const [maxPageNum, setMaxPageNum] = React.useState(1);
 
@@ -234,8 +234,11 @@ export default function EnhancedTable() {
         pageNum: 1
       })
       .then((response) => {
-        setStore(response.data.ranking);
         setData(response.data.ranking);
+        let newStore = [];
+        newStore[0] = [...response.data.ranking];
+
+        setStore(newStore);
       });
   }, []);
   const handleChangePeriod = (event) => {
@@ -247,13 +250,16 @@ export default function EnhancedTable() {
         pageNum: 1
       })
       .then((response) => {
-        setStore(response.data.ranking);
-        setData(response.data.ranking);
+        // setStore(response.data.ranking);
+        let newStore = [];
+        newStore[0] = [...response.data.ranking];
+
+        setStore(newStore);
       });
   };
   const clickPageHanlder = (type) => {
     const currentPageNum = pageNum;
-    let nextPageNum = 0;
+    let nextPageNum = 1;
     if (type === '+') {
       nextPageNum = currentPageNum + 1;
       if (nextPageNum > maxPageNum) {
@@ -264,8 +270,10 @@ export default function EnhancedTable() {
             pageNum: nextPageNum
           })
           .then((response) => {
-            setStore(...store, response.data.ranking);
             setData(response.data.ranking);
+            let newStore = [...store];
+            newStore[currentPageNum] = [...response.data.ranking];
+            setStore(newStore);
           });
       } else {
         setData(store[currentPageNum]);
@@ -316,6 +324,7 @@ export default function EnhancedTable() {
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
   function onDragEnd(result) {
+    console.log('result1 => ', result);
     if (!result.destination) {
       return;
     }
@@ -324,11 +333,13 @@ export default function EnhancedTable() {
       return;
     }
 
+    console.log('after onDragEng=>', result);
     const reorderData = reorder(
       data,
       result.source.index + page * rowsPerPage,
       page * rowsPerPage + result.destination.index
     );
+    console.log('reoderData=>', reorderData);
     setData(reorderData);
   }
   // Avoid a layout jump when reaching the last page with empty rows.
@@ -443,8 +454,7 @@ export default function EnhancedTable() {
         <Stack direction="row" spaciing={2}>
           {pageNum > 1 && (
             <Button variant="outlined" onClick={() => clickPageHanlder('-')}>
-              {1 + (pageNum - 2) * 100} - {(pageNum - 1) * 100}
-              {/* {pageNum > 1 ? `${1 + (pageNum - 2) * 100} - ${(pageNum - 1) * 100}` : `1 - 100`} */}
+              {`${1 + (pageNum - 2) * 100} - ${(pageNum - 1) * 100}`}
             </Button>
           )}
           <Button variant="outlined" onClick={() => clickPageHanlder('+')}>
