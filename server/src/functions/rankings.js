@@ -74,7 +74,6 @@ async function _scrollToBottomAndFetchCollections(page) {
     // defined inside src/helpers/rankingsHelperFunctions.js
     var scrollTop = -1;
     const interval = setInterval(() => {
-      console.log("another scrol... dict.length = " + Object.keys(dict).length);
       window.scrollBy(0, 300);
       // fetchCollections is a function that is exposed through page.addScript() and
       // is defined inside src/helpers/rankingsHelperFunctions.js

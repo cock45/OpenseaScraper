@@ -23,6 +23,7 @@ import { Stack, Avatar, InputLabel, MenuItem, FormControl, Select, Button } from
 import { visuallyHidden } from '@material-ui/utils';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios from 'axios';
+import { ContentState } from 'react-draft-wysiwyg';
 
 function createData(name, volume, avg, floor, protein) {
   return {
@@ -201,8 +202,10 @@ EnhancedTableToolbar.propTypes = {
 
 const reorder = (list, startIndex, endIndex) => {
   const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
+  const fromItem = result[startIndex];
+  const toItem = result[endIndex];
+  result.splice(startIndex, 1, toItem);
+  result.splice(endIndex, 1, fromItem);
 
   return result;
 };
@@ -234,8 +237,9 @@ export default function EnhancedTable() {
         pageNum: 1
       })
       .then((response) => {
-        setData(response.data.ranking);
-        let newStore = [];
+        // setData(response.data.ranking);
+        setData(stableSort(response.data.ranking, getComparator(order, orderBy)));
+        const newStore = [];
         newStore[0] = [...response.data.ranking];
 
         setStore(newStore);
@@ -246,14 +250,16 @@ export default function EnhancedTable() {
     setPeriod(periodValue);
     axios
       .post(`${process.env.REACT_APP_API_BASE_URL}getRank`, {
-        periodValue,
+        period: periodValue,
         pageNum: 1
       })
       .then((response) => {
         // setStore(response.data.ranking);
-        let newStore = [];
-        newStore[0] = [...response.data.ranking];
+        // setData(response.data.ranking);
+        setData(stableSort(response.data.ranking, getComparator(order, orderBy)));
 
+        const newStore = [];
+        newStore[0] = [...response.data.ranking];
         setStore(newStore);
       });
   };
@@ -270,17 +276,20 @@ export default function EnhancedTable() {
             pageNum: nextPageNum
           })
           .then((response) => {
-            setData(response.data.ranking);
-            let newStore = [...store];
+            // setData(response.data.ranking);
+            setData(stableSort(response.data.ranking, getComparator(order, orderBy)));
+            const newStore = [...store];
             newStore[currentPageNum] = [...response.data.ranking];
             setStore(newStore);
           });
       } else {
-        setData(store[currentPageNum]);
+        // setData(store[currentPageNum]);
+        setData(stableSort(store[currentPageNum], getComparator(order, orderBy)));
       }
     } else {
       nextPageNum = currentPageNum - 1;
-      setData(store[nextPageNum - 1]);
+      // setData(store[nextPageNum - 1]);
+      setData(stableSort(store[nextPageNum - 1], getComparator(order, orderBy)));
     }
     setPageNum(nextPageNum);
   };
@@ -323,8 +332,7 @@ export default function EnhancedTable() {
 
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
-  function onDragEnd(result) {
-    console.log('result1 => ', result);
+  const onDragEnd = (result) => {
     if (!result.destination) {
       return;
     }
@@ -333,15 +341,17 @@ export default function EnhancedTable() {
       return;
     }
 
-    console.log('after onDragEng=>', result);
     const reorderData = reorder(
       data,
-      result.source.index + page * rowsPerPage,
-      page * rowsPerPage + result.destination.index
+      result.source.index,
+      result.destination.index
+      // result.source.index + page * rowsPerPage,
+      // page * rowsPerPage + result.destination.index
     );
-    console.log('reoderData=>', reorderData);
     setData(reorderData);
-  }
+    // const clonedArray = JSON.parse(JSON.stringify(reorderData));
+    // setData(clonedArray);
+  };
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
 
@@ -380,9 +390,10 @@ export default function EnhancedTable() {
                 <Droppable droppableId="tablebody">
                   {(provided) => (
                     <TableBody className="tablebody" {...provided.droppableProps} ref={provided.innerRef}>
-                      {stableSort(data, getComparator(order, orderBy))
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((row, index) => {
+                      {
+                        // stableSort(data, getComparator(order, orderBy))
+                        // .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        data.map((row, index) => {
                           const isItemSelected = isSelected(row.name);
                           const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -434,7 +445,8 @@ export default function EnhancedTable() {
                               )}
                             </Draggable>
                           );
-                        })}
+                        })
+                      }
                       {emptyRows > 0 && (
                         <TableRow
                           style={{
