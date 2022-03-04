@@ -1,16 +1,8 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
+// const ProxyChain = require('proxy-chain');
 
-/**
- * Scrapes all collections from the Rankings page at https://opensea.io/rankings
- * options = {
- *   nbrOfPages: number of pages that should be scraped? (defaults to 1 Page = top 100 collections)
- *   debug: [true,false] enable debugging by launching chrome locally (omit headless mode)
- *   logs: [true,false] show logs in the console
- *   browserInstance: browser instance created with puppeteer.launch() (bring your own puppeteer instance)
- * }
- */
 const rankings = async (period = "total", optionsGiven = {}) => {
   const optionsDefault = {
     nbrOfPages: 1,
@@ -21,28 +13,47 @@ const rankings = async (period = "total", optionsGiven = {}) => {
   const options = { ...optionsDefault, ...optionsGiven };
   const { nbrOfPages, debug, logs, browserInstance } = options;
 
-  // init browser
+  const proxyList = [
+    '209.127.191.180:9279',
+    '45.142.28.83:8094',
+    '45.136.231.43:7099',
+    '45.137.60.112:6640',
+    '45.136.228.85:6140',
+    '45.134.184.43:6079 ',
+    '193.8.56.119:9183 ',
+    '45.140.13.124:9137',
+    '45.136.231.85:7141',
+    '45.134.184.201:6237',
+  ];
+
   let browser = browserInstance;
   if (!browser) {
     browser = await puppeteer.launch({
       headless: !debug, // when debug is true => headless should be false
-      args: ['--window-size=1920,1080'],
+      args: [
+        '--window-size=1920,1080',
+        `--proxy-server=${proxyList[0]}`,
+        '--no-sandbox',
+        // '--ignore-certificate-errors',
+      ],
+      executablePath: '/var/www/OpenseaScraper/server/node_modules/puppeteer/.local-chromium/linux-90192/chrome-linux/chrome'
+      // executablePath: '/usr/bin/chromium-browser'
     });
   }
 
-  // const launch_browser = async () => {
-  //   this.browser = false;
-  //   this.browser = await puppeteer.launch();
-  //   this.browser.on('disconnected', launch_browser);
-  // };
-
-  // (async () => {
-  //   await launch_browser();
-  // })();
-
   const page = await browser.newPage();
-  const url = getUrl(period);
+  await page.setExtraHTTPHeaders({
+    'Accept-Language': 'en'
+  });
 
+  await page.authenticate({
+    username: 'ijfnbper',
+    password: 'lxloxxj2s23k'
+  });
+
+  await page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36');
+
+  const url = getUrl(period);
   await page.goto(url);
   await page.waitForSelector('.cf-browser-verification', { hidden: true });
   await page.addScriptTag({ path: require.resolve("../helpers/rankingsHelperFunctions.js") });
@@ -70,13 +81,9 @@ async function _clickNextPageButton(page) {
 }
 async function _scrollToBottomAndFetchCollections(page) {
   return await page.evaluate(() => new Promise((resolve) => {
-    // keep in mind inside the browser context we have the global variable "dict" initialized
-    // defined inside src/helpers/rankingsHelperFunctions.js
     var scrollTop = -1;
     const interval = setInterval(() => {
       window.scrollBy(0, 300);
-      // fetchCollections is a function that is exposed through page.addScript() and
-      // is defined inside src/helpers/rankingsHelperFunctions.js
       fetchCollections(dict);
       if (document.documentElement.scrollTop !== scrollTop) {
         scrollTop = document.documentElement.scrollTop;
